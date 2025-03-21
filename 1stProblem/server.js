@@ -14,9 +14,28 @@ const API_URLS = {
     r: 'http://20.244.56.144/test/rand'
 };
 
+let authToken = "";
+const fetchAuthToken = async () => {
+    try {
+        const response = await axios.post('http://20.244.56.144/test/auth', {
+            companyName: "IIIT Bhagalpur",
+            clientID: "a33d4f07-8d98-4bee-8fc0-94fc36ee8675",
+            clientSecret: "vshQdhLLaXWErYLk",
+            ownerName: "Sattwik Bhakta",
+            ownerEmail: "sattwik.2201060cs@iiitbh.ac.in",
+            rollNo: "2201060CS"
+        });
+
+        authToken = response.data.access_token;
+        console.log("Authentication Token:", authToken);
+    } catch (error) {
+        console.error("Error fetching auth token:", error.response?.data || error.message);
+    }
+};
+
 const fetchNumbers = async (url) => {
     try {
-        const response = await axios.get(url, { timeout: 500 });
+        const response = await axios.get(url, { headers: { Authorization: `Bearer ${authToken}` },timeout: 500 });
         return response.data.numbers || [];
     } catch (error) {
         return [];
@@ -50,4 +69,6 @@ app.get('/numbers/:numberid', async (req, res) => {
     });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+fetchAuthToken().then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});
