@@ -33,3 +33,21 @@ const calculateAverage = () => {
     if (!windowStore.length) return 0;
     return parseFloat((windowStore.reduce((sum, num) => sum + num, 0) / windowStore.length).toFixed(2));
 };
+
+app.get('/numbers/:numberid', async (req, res) => {
+    const { numberid } = req.params;
+    if (!API_URLS[numberid]) return res.status(400).json({ error: 'Invalid number ID' });
+    
+    const prevState = [...windowStore];
+    const newNumbers = await fetchNumbers(API_URLS[numberid]);
+    updateWindow(newNumbers);
+    
+    res.json({
+        windowPrevState: prevState,
+        windowCurrState: [...windowStore],
+        numbers: newNumbers,
+        avg: calculateAverage()
+    });
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
